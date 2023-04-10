@@ -1,0 +1,49 @@
+name: 'Terraform CI'
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+     - '**.tf'
+     - '**.tfvars'
+  pull_request:
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash        
+    
+    steps:
+    
+    # coleta a ultima imagem do repositorio
+      - name: Checkout
+        uses: actions/checkout@v2
+    
+    # cria a imagem docker
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Init
+        run:  terraform init
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+      - name: Terraform Plan
+        run: terraform plan -lock=false
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+#        continue-on-error: true
+    
+    # Condicao para executar somente na branch main e push
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+#        continue-on-error: true
