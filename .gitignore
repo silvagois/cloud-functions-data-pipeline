@@ -2,4 +2,9 @@ bigquery/*
 
 *.log
 
-function.tf
+#function.tf
+.terraform
+.terraform.lock.hcl
+
+
+
